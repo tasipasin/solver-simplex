@@ -8,7 +8,10 @@
 # 7. Indicar se o problema é sem fronteira.
 
 import tkinter as tk
+from tkinter import messagebox
 
+objectiveVariables = []
+restrictionsVariables = []
 
 # Função para verificar se o problema é de maximização
 def checkIfIsMaximization():
@@ -62,6 +65,16 @@ def clearScreen(window):
         widget.destroy()
 
 
+# Função para tratar a confirmação dos valores de variáveis e restrições
+def confirmProblemValues(window, numberVariablesVar, numberRestrictionsVar):
+    numVariables = int(numberVariablesVar.get())
+    numRestrictions = int(numberRestrictionsVar.get())
+    clearScreen(window)
+
+    objectiveVariablesValue = createObjectiveFunctionLabels(window, numVariables)
+    restrictionsVariablesValue = createRestrictionsLabels(window, numVariables, numRestrictions)
+
+
 # Função para criar labels da função objetivo
 def createObjectiveFunctionLabels(window, numVariables):
     createLabel(window, "Função Objetivo:", 0, 0)
@@ -102,31 +115,41 @@ def createRestrictionsLabels(window, numVariables, numRestrictions):
         column += 1
         restrictionsVariablesValue.append(tk.StringVar())
         column = 1
+    createButton(window, "Confirmar valores", lambda: showResults(window, objectiveVariables, restrictionsVariables), (numRestrictions + 3), 0)
     return restrictionsVariablesValue
 
 
-# Função para tratar a confirmação dos valores de variáveis e restrições
-def confirmProblemValues(window, numberVariablesVar, numberRestrictionsVar):
-    numVariables = int(numberVariablesVar.get())
-    numRestrictions = int(numberRestrictionsVar.get())
-    clearScreen(window)
-
-    objectiveVariablesValue = createObjectiveFunctionLabels(window, numVariables)
-    restrictionsVariablesValue = createRestrictionsLabels(window, numVariables, numRestrictions)
+def showResults(window, objectiveVariables, restrictionsVariables):
+    pass
 
 
 def main():
     window = createMainWindow()
 
+    # Número de variáveis para o problema
     numberVariablesVar = tk.StringVar()
-    numberVariablesLabel = createLabel(window, "Número de Variáveis:", 0, 0)
-    entryNumberVariables = createEntry(window, numberVariablesVar, 10, 0, 1)
+    createLabel(window, "Número de Variáveis:", 0, 0)
+    createEntry(window, numberVariablesVar, 10, 0, 1)
 
+    # Número de restrições para o problema
     numberRestrictionsVar = tk.StringVar()
-    restrictionsLabel = createLabel(window, "Número de Restrições:", 1, 0)
-    entryRestrictions = createEntry(window, numberRestrictionsVar, 10, 1, 1)
+    createLabel(window, "Número de Restrições:", 1, 0)
+    createEntry(window, numberRestrictionsVar, 10, 1, 1)
 
-    confirmButton = createButton(window, "Confirmar valores", lambda: confirmProblemValues(window, numberVariablesVar, numberRestrictionsVar), 2, 0)
+    # Botão para confirmar os valores de variáveis e restrições
+    def confirmProblemValuesCallback():
+        numVariables = int(numberVariablesVar.get())
+        numRestrictions = int(numberRestrictionsVar.get())
+        clearScreen(window)
+
+        global objectiveVariables
+        global restrictionsVariables
+        # Define os valores para a função objetivo e restrições
+        objectiveVariables = createObjectiveFunctionLabels(window, numVariables)
+        restrictionsVariables = createRestrictionsLabels(window, numVariables, numRestrictions)
+
+    createLabel(window, "", 2, 0)
+    createButton(window, "Confirmar valores para o problema", confirmProblemValuesCallback, 3, 0)
 
     # checkIfIsMaximization()
     # checkIfIsDegenerate()
@@ -134,6 +157,7 @@ def main():
     # checkIfIsUnbounded()
 
     window.mainloop()
+
 
 if __name__ == "__main__":
     main()
