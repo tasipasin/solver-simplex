@@ -103,7 +103,6 @@ def createObjectiveFunctionLabels(numVariables):
         objectiveVariablesValue.append(tk.StringVar())
     return objectiveVariablesValue
 
-
 # Cria a tabela de variáveis para as restrições
 def createVariable(row, column, isBeta, varList):
     # Identifica qual a variável sendo incluída na tabela
@@ -126,7 +125,6 @@ def createVariable(row, column, isBeta, varList):
     varList.append(var)
     return thisColumn - column
 
-
 # Função para criar labels das restrições
 def createRestrictionsLabels(totalVariables, totalRestrictions):
     global restrictionsVariables
@@ -148,27 +146,46 @@ def createRestrictionsLabels(totalVariables, totalRestrictions):
         column += 1
         rowVariableList.append(var)
         # Cria uma sublista para cada restrição (linha)
-        restrictionsVariables[row] = rowVariableList
+        restrictionsVariables[row - 2] = rowVariableList
         # Reseta a coluna para a próxima restrição (linha)
         column = 1
+
+def createSimplexTable(restrictionsVariables, objectiveVariablesValue):
+    
+    createLabel("", 0, 0)
+    createLabel("", 1, 0)
+    createLabel("             ", 2, 0)
+    createLabel("Tabela do Simplex:", 2, 1)
+    createLabel("--------------------------------------------------------", 3, 1)
+    createLabel("", 4, 0)
 
 # Inicializa a resolução com os dados inseridos
 def initResolution():
     global restrictionsVariables
     global objectiveVariablesValue
     try:
+        # Lista para armazenar os valores das desigualdades
+        inequalities = []
+
         # Recupera os valores dos campos como inteiro
         for key in restrictionsVariables:
             toGet = restrictionsVariables[key]
             asNumber = []
-            for item in toGet:
+            for item in toGet[:-1]:
                 asNumber.append(int(item.get()))
+            # Adiciona o valor da variável na lista
             restrictionsVariables[key] = asNumber
-            print(asNumber)
+            # Adiciona o valor da desigualdade na lista
+            inequalities.append(toGet[-1].get())
+
             # Limpa a tela
             clearScreen()
-            createButton("Confirmar valores para o problema", confirmProblemValuesCallback, 3, 0)
-            ## A PARTIR DAQUI DA PRA FAZER OS CALCULOS!
+            # Monta a tabela do simplex
+            createSimplexTable(restrictionsVariables, objectiveVariablesValue);
+
+        # TODO - Aqui monta a tabela do simplex
+        # ...
+
     except ValueError:
         messagebox.showerror("Erro", "Valores inválidos")
 
@@ -185,9 +202,10 @@ def confirmProblemValuesCallback():
     # Define os valores para a função objetivo e restrições
     createObjectiveFunctionLabels(numVariables)
     createRestrictionsLabels(numVariables, numRestrictions)
-    
+
     # Cria botão para confirmar os valores (valores da função objetivo e restrições)
-    createButton("Confirmar valores", initResolution, (numRestrictions + 3), 0)
+    createLabel("", (numRestrictions + 3), 0)
+    createButton("Confirmar valores", initResolution, (numRestrictions + 4), 0)
 
 
 def main():
