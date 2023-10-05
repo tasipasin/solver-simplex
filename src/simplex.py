@@ -6,6 +6,8 @@ variables = []
 excessVariables = []
 # Contém o ÍNDICE das variáveis que são base relativos à lista 'variables'
 baseVariables = []
+# Contém o ÍNDICE das variáveis que são base relativos à lista 'variables'
+funcObj = []
 
 # Mapeamento de restrições. Chave é o número da equação e Valor é a lista de valores
 restrictions = {}
@@ -27,42 +29,40 @@ def __incrementIteration():
     currIteration += 1
 
 # Define todo o conteúdo da primeira iteração com base nos valores inseridos
-def initial(funcObj, restrictions, inequalities):
+def initial(funcObjR, restList, inequalities):
     global cj
     global beta
+    global restrictions
+    global funcObj
+    funcObj = funcObjR
 
     # cada restrição tem uma variável a mais
-    for variable in range(0, len(restrictions)* 2):
+    for variable in range(0, len(restList)* 2):
         # Cria o nome da variável
         variableName = "x{0}".format(variable + 1)
         variables.append(variableName)
         # Verifica se a variável está na função objetivo
-        if variable >= len(restrictions):
+        if variable >= len(restList):
             funcObj.append(0)
             excessVariables.append(variable)
             baseVariables.append(variable)
-
-    # Atribui que a quantidade de restrição é igual a quantidade de variáveis de excesso. Exemplo: 2 restrições, 2 variáveis de excesso
-    excessVariablesQtd = len(restrictions)
     # Laço condicional responsável em criar as restrições com preenchimento de 0 e 1 conforme matriz identidade
-    for key in restrictions:
+    for key in restList:
         # Armazena o valor da restrição
-        value = restrictions[key]
-        # Atribui a quantidade de variáveis de excesso que faltam para as variáveis faltantes
-        variablesMissing = excessVariablesQtd
+        value = restList[key]
         # Inicializa a variável de comparação identidade
         identity = 1
+        base = 0
         # Enquanto houver variáveis de excesso faltando:
-        while variablesMissing > 0:
+        for base in baseVariables:
             # Se a variável de excesso for igual a variável de comparação identidade, adiciona 1, senão 0
             if key == identity:
                 value.append(1)
             else:
                 value.append(0)
-            # Decrementa a quantidade de variáveis de excesso faltando
-            variablesMissing -= 1
             # Aumenta o valor da variável de comparação identidade
             identity += 1
+        restrictions[base] = value
     # Atribui a função objetivo na lista de cj
     cj = funcObj
     # Atribui as desigualdades na lista de beta
@@ -71,6 +71,7 @@ def initial(funcObj, restrictions, inequalities):
     print(f"Função objetivo: {funcObj}")
     print(f"Variáveis base: {baseVariables}")
     print(f"Restrições com preenchimento da identidade: {restrictions}\n")
+    nextIteration()
 
 
 # Calcula o valor de Zj
@@ -83,7 +84,15 @@ def __evaluateCjZj():
 
 # Realiza a próxima iteração
 def nextIteration():
-    pass
+    zj = []
+    for value in range(len(variables)):
+        sumZj = 0
+        for index in baseVariables:
+            print(index)
+            print("Índice da Variável Base: {0}, RestVal: {1}, Variável: {2}".format(index, restrictions[index][value], variables[value]))
+            sumZj += funcObj[index] * restrictions[index][value]
+        zj.append(sumZj)
+    print(zj)
 
 ##################################### Teste
 initial([2,3], {1:[8,7], 2:[5,4]}, [42,44])
