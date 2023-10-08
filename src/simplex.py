@@ -6,7 +6,7 @@ variables = []
 excessVariables = []
 # Contém o ÍNDICE das variáveis que são base relativos à lista 'variables'
 baseVariables = []
-# Contém o ÍNDICE das variáveis que são base relativos à lista 'variables'
+# Lista para a função objetivo do problema
 funcObj = []
 
 # Mapeamento de restrições. Chave é o número da equação e Valor é a lista de valores
@@ -15,6 +15,7 @@ restrictions = {}
 cj = []
 # Contém os valores de beta para cada 'key' (índice) de restrictions
 beta = []
+
 
 def getVariables():
     return variables
@@ -75,42 +76,91 @@ def initial(funcObjR, restList, inequalities):
     print(f"\nVariaveis do problema e com preenchimento do excesso: {variables}")
     print(f"Função objetivo: {funcObj}")
     print(f"Variáveis base: {baseVariables}")
+    print(f"Beta: {beta}")
     print(f"Restrições com preenchimento da identidade: {restrictions}\n")
     # TODO: Remover
     nextIteration()
 
+# Verifica se as variáveis base tem valor de Cj-Zj igual a zero
+def verifyZeroInBaseVariables(cjZj):
+    result = True
+    for i in range(len(cjZj)):
+        if i in baseVariables and cjZj[i] != 0 and not result:
+            result = False
+    return result
+            
 
-# Calcula o valor de Zj
-def __evaluateZj():
-    pass
+# Verifica coluna Pivô
+def __evaluatePivotColumn(cjZj):
+    higherValueIndex = -1
+    # Verifica se as variáveis base tem valor de Cj-Zj igual a zero
+    if verifyZeroInBaseVariables(cjZj):
+        for i in range(len(cjZj)):
+            # Verifica se o valor do índice ainda não foi atribuido
+            # ou se o valor presente em Cj-Zj é maior que o valor de retorno
+            if cjZj[i] > 0 and (higherValueIndex < 0 or cjZj[i] > cjZj[higherValueIndex]):
+                higherValueIndex = i
+    return higherValueIndex
 
-# Calcula o valor de Cj - Zj
-def __evaluateCjZj():
-    pass
+# Verifica a linha pivô
+def __evaluatePivotRow(theta):
+    minorValueIndex = -1
+    for i in range(len(theta)):
+        # Verifica se o valor do índice ainda não foi atribuido
+        # ou se o valor presente na coluna Theta é menor que o anterior
+        if minorValueIndex < 0 or theta[i] < theta[minorValueIndex]:
+            minorValueIndex = i
+    return minorValueIndex
 
-def _subtract(cj, zj):
+# Subtrai o Cj do Zj
+def __subtract(cj, zj):
     result = []
     for index in range(len(cj)):
         result.append(cj[index] - zj[index])
     return result
 
+# Divide o beta pelo valor da restrição em determinada posição
+def __divide(beta, position):
+    result = []
+    functionNmbr = 1
+    # Laço de repetição para cada elemento em 'beta'
+    for value in beta:
+        # Adiciona o conteúdo da iteração divididos pelo valor da restrição na determinada posição
+        result.append(value / restrictions[functionNmbr][position])
+        # Incrementa a variável para ir para o valor da próxima restrição
+        functionNmbr += 1
+    return result
+
 # Realiza a próxima iteração
 def nextIteration():
     zj = []
+    # Laço de repetição para todas as variáveis
     for value in range(len(variables)):
         sumZj = 0
         functionNmbr = 1
+        # Laço para multiplicar o valor da variável base para cada respectivo elemento na coluna e somar o resultado
         for index in baseVariables:
-            print(value)
-            print(index)
-            print(functionNmbr)
-            print("Índice da Variável Base: {0}, RestVal: {1}, Variável: {2}".format(index, restrictions[functionNmbr][value], variables[value]))
+            print("Índice da Variável Base: {0}, RestVal: {1}, Variável: {2}".format(funcObj[index], restrictions[functionNmbr][value], variables[value]))
             sumZj += funcObj[index] * restrictions[functionNmbr][value]
             functionNmbr += 1
+        print()
         zj.append(sumZj)
-    print(zj)
-    cjZj = _subtract(cj, zj)
-    print(cjZj)
+    print(f"Zj's da iteração {getCurrIteration()}: {zj}")
+    cjZj = __subtract(cj, zj)
+    print(f"Cj-Zj da iteração {getCurrIteration()}: {cjZj}")
+    pivotColumnIndex = __evaluatePivotColumn(cjZj)
+    print(f"> Coluna Pivô - índice [{pivotColumnIndex}] com valor [{cjZj[pivotColumnIndex]}]")
+    # Verifica se encontrou coluna pivô, indicando que existe valor positivo em Cj-Zj
+    if pivotColumnIndex >= 0:
+        dividedBeta = __divide(beta, pivotColumnIndex)
+        print(f"Theta: {dividedBeta}")
+        pivotRowIndex = __evaluatePivotRow(dividedBeta)
+        print(f"> Linha Pivô - índice [{pivotRowIndex}] com valor [{dividedBeta[pivotRowIndex]}]")
+        pivotElement = restrictions[pivotRowIndex + 1][pivotColumnIndex]
+        print(f"Elemento Pivô com valor {pivotElement}")
+        print(f"Iteração atual: {getCurrIteration()}")
+        # TODO: arrumar as equações para a próxima iteração
+        __incrementIteration()
 
 ##################################### Teste
-initial([2,3], {1:[8,7], 2:[5,4]}, [42,44])
+initial([60,40], {1:[2,3], 2:[4,2]}, [100,120])
