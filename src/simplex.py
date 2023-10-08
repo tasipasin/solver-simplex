@@ -46,23 +46,28 @@ def initial(funcObjR, restList, inequalities):
             funcObj.append(0)
             excessVariables.append(variable)
             baseVariables.append(variable)
+    # Atribui que a quantidade de restrição é igual a quantidade de variáveis de excesso. Exemplo: 2 restrições, 2 variáveis de excesso
+    excessVariablesQtd = len(restList)
     # Laço condicional responsável em criar as restrições com preenchimento de 0 e 1 conforme matriz identidade
     for key in restList:
         # Armazena o valor da restrição
         value = restList[key]
+        # Atribui a quantidade de variáveis de excesso que faltam para as variáveis faltantes
+        variablesMissing = excessVariablesQtd
         # Inicializa a variável de comparação identidade
         identity = 1
-        base = 0
         # Enquanto houver variáveis de excesso faltando:
-        for base in baseVariables:
+        while variablesMissing > 0:
             # Se a variável de excesso for igual a variável de comparação identidade, adiciona 1, senão 0
             if key == identity:
                 value.append(1)
             else:
                 value.append(0)
+            # Decrementa a quantidade de variáveis de excesso faltando
+            variablesMissing -= 1
             # Aumenta o valor da variável de comparação identidade
             identity += 1
-        restrictions[base] = value
+        restrictions[key] = value
     # Atribui a função objetivo na lista de cj
     cj = funcObj
     # Atribui as desigualdades na lista de beta
@@ -71,6 +76,7 @@ def initial(funcObjR, restList, inequalities):
     print(f"Função objetivo: {funcObj}")
     print(f"Variáveis base: {baseVariables}")
     print(f"Restrições com preenchimento da identidade: {restrictions}\n")
+    # TODO: Remover
     nextIteration()
 
 
@@ -82,17 +88,29 @@ def __evaluateZj():
 def __evaluateCjZj():
     pass
 
+def _subtract(cj, zj):
+    result = []
+    for index in range(len(cj)):
+        result.append(cj[index] - zj[index])
+    return result
+
 # Realiza a próxima iteração
 def nextIteration():
     zj = []
     for value in range(len(variables)):
         sumZj = 0
+        functionNmbr = 1
         for index in baseVariables:
+            print(value)
             print(index)
-            print("Índice da Variável Base: {0}, RestVal: {1}, Variável: {2}".format(index, restrictions[index][value], variables[value]))
-            sumZj += funcObj[index] * restrictions[index][value]
+            print(functionNmbr)
+            print("Índice da Variável Base: {0}, RestVal: {1}, Variável: {2}".format(index, restrictions[functionNmbr][value], variables[value]))
+            sumZj += funcObj[index] * restrictions[functionNmbr][value]
+            functionNmbr += 1
         zj.append(sumZj)
     print(zj)
+    cjZj = _subtract(cj, zj)
+    print(cjZj)
 
 ##################################### Teste
 initial([2,3], {1:[8,7], 2:[5,4]}, [42,44])
