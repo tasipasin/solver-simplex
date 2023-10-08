@@ -135,7 +135,7 @@ def __divide(beta, position):
     # Laço de repetição para cada elemento em 'beta'
     for value in beta:
         # Adiciona o conteúdo da iteração divididos pelo valor da restrição na determinada posição
-        result.append(value / restrictions[functionNmbr][position])
+        result.append(round(value / restrictions[functionNmbr][position], 2))
         # Incrementa a variável para ir para o valor da próxima restrição
         functionNmbr += 1
     return result
@@ -154,22 +154,22 @@ def nextIteration():
             functionNmbr += 1
         print()
         zj.append(sumZj)
-    print(f"Zj's da iteração {getCurrIteration()}: {zj}")
+    # print(f"Zj's da iteração {getCurrIteration()}: {zj}")
     cjZj = __subtract(cj, zj)
-    print(f"Cj-Zj da iteração {getCurrIteration()}: {cjZj}")
+    # print(f"Cj-Zj da iteração {getCurrIteration()}: {cjZj}")
     pivotColumnIndex = __evaluatePivotColumn(cjZj)
-    print(f"> Coluna Pivô - índice [{pivotColumnIndex}] com valor [{cjZj[pivotColumnIndex]}]")
+    # print(f"> Coluna Pivô - índice [{pivotColumnIndex}] com valor [{cjZj[pivotColumnIndex]}]")
     theta = []
     pivotRowIndex = -1
     # Verifica se encontrou coluna pivô, indicando que existe valor positivo em Cj-Zj
     if pivotColumnIndex >= 0:
         theta = __divide(beta, pivotColumnIndex)
-        print(f"Theta: {theta}")
+        # print(f"Theta: {theta}")
         pivotRowIndex = __evaluatePivotRow(theta)
-        print(f"> Linha Pivô - índice [{pivotRowIndex}] com valor [{theta[pivotRowIndex]}]")
+        # print(f"> Linha Pivô - índice [{pivotRowIndex}] com valor [{theta[pivotRowIndex]}]")
         pivotElement = restrictions[pivotRowIndex + 1][pivotColumnIndex]
-        print(f"Elemento Pivô com valor {pivotElement}")
-        print(f"Iteração atual: {getCurrIteration()}")
+        # print(f"Elemento Pivô com valor {pivotElement}")
+        # print(f"Iteração atual: {getCurrIteration()}")
         # TODO: arrumar as equações para a próxima iteração
         __incrementIteration()
     else:

@@ -60,7 +60,10 @@ def getRestrictionVariables():
 
 # Cria labels de texto
 def createLabel(text, row, column):
-    label = tk.Label(getWindow(), text = text)
+    createLabelWithColor(text, row, column, "black")
+
+def createLabelWithColor(text, row, column, color):
+    label = tk.Label(getWindow(), text = text, fg=color)
     label.grid(row = row, column = column, sticky = "n", padx=8)
 
 # Cria entradas de texto default (tamanho 6)
@@ -159,6 +162,8 @@ def createSimplexTable(restrictionsVariables, objectiveVariablesValue):
     coluna = 0
     createLabel("", linha, coluna)
     linha += 1
+    createLabel("", linha, coluna)
+    linha += 1
     createLabel(f"Iteração {simplex.getCurrIteration()}", linha, coluna)
     coluna += 1
     createLabel("", linha, coluna)
@@ -205,8 +210,13 @@ def createSimplexTable(restrictionsVariables, objectiveVariablesValue):
         createLabel("|", linhaInsert, coluna)
         linhaInsert += 1
 
-    createButton("Próxima iteração", simplex.nextIteration, linha + 1, 0)
-    # TODO - Implementar a lógica para a resolução do problema
+    createButton("Próxima iteração", lambda: iteration(linha), linha + 1, 0)
+    
+    # 60 40
+    # 2 3 100
+    # 4 2 120
+    
+def iteration(linha):
     zj, cjZj, pivotColumnIndex, theta, pivotRowIndex = simplex.nextIteration()
     print(f"\nZj's da iteração {simplex.getCurrIteration()}: {zj}")
     print(f"Cj-Zj da iteração {simplex.getCurrIteration()}: {cjZj}")
@@ -214,7 +224,32 @@ def createSimplexTable(restrictionsVariables, objectiveVariablesValue):
     print(f"Theta: {theta}")
     print(f"> Linha Pivô - índice [{pivotRowIndex}] com valor [{theta[pivotRowIndex]}]")
     print(f"Elemento Pivô: {restrictionsVariables[pivotRowIndex + 1][pivotColumnIndex]}")
+
+    linha = linha - 2
+    coluna = 3
+    for i in range(len(zj)):
+        createLabel(str(zj[i]), linha, coluna)
+        coluna += 1
+    createLabel("|", linha, coluna)
+    linha += 1
+    coluna = 3
+    for i in range(len(cjZj)):
+        createLabel(str(cjZj[i]), linha, coluna)
+        coluna += 1
+    createLabel("|", linha, coluna)
+    linha += 1
     
+    linha = 3
+    coluna = 3 + len(simplex.getVariables()) + 3
+    for i in range(len(theta)):
+        createLabel(str(theta[i]), linha, coluna)
+        linha += 1
+
+    window.grid_slaves(5 + len(simplex.getBaseVariables()), 3 + pivotColumnIndex)[0].config(fg="red")
+    window.grid_slaves(3 + pivotRowIndex, 3 + len(simplex.getVariables()) + 3)[0].config(fg="red")
+    window.grid_slaves(pivotRowIndex + 3, pivotColumnIndex + 3)[0].config(fg="red")
+    # createLabelWithColor()
+
 
 # Inicializa a resolução com os dados inseridos
 def initResolution():
