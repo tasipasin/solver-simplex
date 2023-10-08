@@ -87,6 +87,7 @@ def clearScreen():
 
 # Cria os textos e as entradas para a função objetivo
 def createObjectiveFunctionLabels(numVariables):
+    # TODO - Tem que aceitar valores com vírgula
     global objectiveVariablesValue
     objectiveVariablesValue = []
     createLabel("Função Objetivo:", 0, 0)

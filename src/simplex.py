@@ -47,12 +47,12 @@ def initial(funcObjR, restList, inequalities):
     funcObj = funcObjR
 
     # cada restrição tem uma variável a mais
-    for variable in range(0, len(restList)* 2):
+    for variable in range(0, len(restList) + len(funcObj)):
         # Cria o nome da variável
         variableName = "x{0}".format(variable + 1)
         variables.append(variableName)
         # Verifica se a variável está na função objetivo
-        if variable >= len(restList):
+        if variable >= len(funcObj):
             funcObj.append(0)
             excessVariables.append(variable)
             baseVariables.append(variable)
