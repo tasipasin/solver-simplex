@@ -159,8 +159,6 @@ def createSimplexTable(restrictionsVariables, objectiveVariablesValue):
     coluna = 0
     createLabel("", linha, coluna)
     linha += 1
-    createLabel("", linha, coluna)
-    linha += 1
     createLabel(f"Iteração {simplex.getCurrIteration()}", linha, coluna)
     coluna += 1
     createLabel("", linha, coluna)
@@ -191,23 +189,23 @@ def createSimplexTable(restrictionsVariables, objectiveVariablesValue):
     linha += 1
     createLabel("---", linha, coluna)
     
-    linha = 3
+    linhaInsert = 3
     for key in simplex.getRestrictions():
         coluna = 3
         listOfValues = restrictionsVariables[key]
         for item in listOfValues:
-            createLabel(str(item), linha, coluna)
+            createLabel(str(item), linhaInsert, coluna)
             coluna += 1
         # Coluna da barrinha
-        createLabel("|", linha, coluna)
+        createLabel("|", linhaInsert, coluna)
         # Insere o valor de Beta da equação
         coluna += 1
-        createLabel(simplex.getBeta()[key - 1], linha, coluna)
+        createLabel(simplex.getBeta()[key - 1], linhaInsert, coluna)
         coluna += 1
-        createLabel("|", linha, coluna)
-        linha += 1
-    
+        createLabel("|", linhaInsert, coluna)
+        linhaInsert += 1
 
+    createButton("Próxima iteração", simplex.nextIteration, linha + 1, 0)
     # TODO - Implementar a lógica para a resolução do problema
     zj, cjZj, pivotColumnIndex, theta, pivotRowIndex = simplex.nextIteration()
     print(f"\nZj's da iteração {simplex.getCurrIteration()}: {zj}")
