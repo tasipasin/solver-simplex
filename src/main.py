@@ -11,6 +11,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import math
+import simplex
 
 # Função para criar a janela principal do tkinter
 def createMainWindow():
@@ -60,7 +61,7 @@ def getRestrictionVariables():
 # Cria labels de texto
 def createLabel(text, row, column):
     label = tk.Label(getWindow(), text = text)
-    label.grid(row = row, column = column, sticky = "n")
+    label.grid(row = row, column = column, sticky = "n", padx=8)
 
 # Cria entradas de texto default (tamanho 6)
 def createDefaultEntry(textvariable, row, column):
@@ -89,8 +90,9 @@ def createObjectiveFunctionLabels(numVariables):
     column = 1
     # Cria laço condicional para o valor das variáveis da função objetivo. A cada iteração do laço, cria-se uma nova variável (coluna)
     for variable in range(1, numVariables + 1):
+        field = tk.StringVar()
         # Cria campo para a variável
-        createDefaultEntry(tk.StringVar(), 0, column)
+        createDefaultEntry(field, 0, column)
         column += 1
         # Cria label da variável
         createLabel(f"x{variable}", 0, column)
@@ -100,7 +102,7 @@ def createObjectiveFunctionLabels(numVariables):
             createLabel("+", 0, column)
             column += 1
         # Adiciona variável na lista de variáveis da função objetivo
-        objectiveVariablesValue.append(tk.StringVar())
+        objectiveVariablesValue.append(field)
     return objectiveVariablesValue
 
 # Cria a tabela de variáveis para as restrições
@@ -150,14 +152,71 @@ def createRestrictionsLabels(totalVariables, totalRestrictions):
         # Reseta a coluna para a próxima restrição (linha)
         column = 1
 
+# Função para criar a tabela Simplex
 def createSimplexTable(restrictionsVariables, objectiveVariablesValue):
+    # Monta a tabela inicial do simplex
+    linha = 0
+    coluna = 0
+    createLabel("", linha, coluna)
+    linha += 1
+    createLabel("", linha, coluna)
+    linha += 1
+    createLabel(f"Iteração {simplex.getCurrIteration()}", linha, coluna)
+    coluna += 1
+    createLabel("", linha, coluna)
+    coluna += 1
+    createLabel("|", linha, coluna)
+    coluna += 1
+    for i in range(len(simplex.getVariables())):
+        createLabel(f"x{i + 1}", linha, coluna)
+        coluna += 1
+    createLabel("|", linha, coluna)
+    coluna += 1
+    createLabel("beta", linha, coluna)
+    coluna += 1
+    createLabel("|", linha, coluna)
+    coluna += 1
+    createLabel("theta", linha, coluna)
+
+    linha += 1
+    coluna = 1
+    for value in simplex.getBaseVariables():
+        createLabel(simplex.getVariables()[value], linha, coluna)
+        linha += 1
+    createLabel("---", linha, coluna)
+    linha += 1
+    createLabel("Zj", linha, coluna)
+    linha += 1
+    createLabel("Cj-Zj", linha, coluna)
+    linha += 1
+    createLabel("---", linha, coluna)
     
-    createLabel("", 0, 0)
-    createLabel("", 1, 0)
-    createLabel("             ", 2, 0)
-    createLabel("Tabela do Simplex:", 2, 1)
-    createLabel("--------------------------------------------------------", 3, 1)
-    createLabel("", 4, 0)
+    linha = 3
+    for key in simplex.getRestrictions():
+        coluna = 3
+        listOfValues = restrictionsVariables[key]
+        for item in listOfValues:
+            createLabel(str(item), linha, coluna)
+            coluna += 1
+        # Coluna da barrinha
+        createLabel("|", linha, coluna)
+        # Insere o valor de Beta da equação
+        coluna += 1
+        createLabel(simplex.getBeta()[key - 1], linha, coluna)
+        coluna += 1
+        createLabel("|", linha, coluna)
+        linha += 1
+    
+
+    # TODO - Implementar a lógica para a resolução do problema
+    zj, cjZj, pivotColumnIndex, theta, pivotRowIndex = simplex.nextIteration()
+    print(f"\nZj's da iteração {simplex.getCurrIteration()}: {zj}")
+    print(f"Cj-Zj da iteração {simplex.getCurrIteration()}: {cjZj}")
+    print(f"> Coluna Pivô - índice [{pivotColumnIndex}] com valor [{cjZj[pivotColumnIndex]}]")
+    print(f"Theta: {theta}")
+    print(f"> Linha Pivô - índice [{pivotRowIndex}] com valor [{theta[pivotRowIndex]}]")
+    print(f"Elemento Pivô: {restrictionsVariables[pivotRowIndex + 1][pivotColumnIndex]}")
+    
 
 # Inicializa a resolução com os dados inseridos
 def initResolution():
@@ -176,15 +235,19 @@ def initResolution():
             # Adiciona o valor da variável na lista
             restrictionsVariables[key] = asNumber
             # Adiciona o valor da desigualdade na lista
-            inequalities.append(toGet[-1].get())
-
-            # Limpa a tela
-            clearScreen()
-            # Monta a tabela do simplex
-            createSimplexTable(restrictionsVariables, objectiveVariablesValue);
-
-        # TODO - Aqui monta a tabela do simplex
-        # ...
+            inequalities.append(int(toGet[-1].get()))
+        
+        # Recupera os valores dos campos como inteiro
+        asNumber = []
+        for value in objectiveVariablesValue:
+            asNumber.append(int(value.get()))
+        # Adiciona o valor da variável na lista
+        objectiveVariablesValue = asNumber
+        simplex.initial(objectiveVariablesValue, restrictionsVariables, inequalities)
+        # Limpa a tela
+        clearScreen()
+        # Monta a tabela do simplex
+        createSimplexTable(restrictionsVariables, objectiveVariablesValue)
 
     except ValueError:
         messagebox.showerror("Erro", "Valores inválidos")
@@ -220,11 +283,6 @@ def main():
     # Cria botão para confirmar os valores do problema (quantidade de variáveis e restrições)
     createLabel("", 2, 0)
     createButton("Confirmar valores para o problema", confirmProblemValuesCallback, 3, 0)
-
-    # checkIfIsMaximization()
-    # checkIfIsDegenerate()
-    # checkIfIsImpracticable()
-    # checkIfIsUnbounded()
 
     # Mantém a janela principal aberta até que o usuário feche
     getWindow().mainloop()

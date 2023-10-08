@@ -20,9 +20,18 @@ beta = []
 def getVariables():
     return variables
 
+def getBaseVariables():
+    return baseVariables
+
+def getRestrictions():
+    return restrictions
+
 # Retorna a iteração atual
 def getCurrIteration():
     return currIteration
+
+def getBeta():
+    return beta
 
 # Incrementa a iteração atual
 def __incrementIteration():
@@ -79,7 +88,7 @@ def initial(funcObjR, restList, inequalities):
     print(f"Beta: {beta}")
     print(f"Restrições com preenchimento da identidade: {restrictions}\n")
     # TODO: Remover
-    nextIteration()
+    # nextIteration()
 
 # Verifica se as variáveis base tem valor de Cj-Zj igual a zero
 def verifyZeroInBaseVariables(cjZj):
@@ -150,17 +159,20 @@ def nextIteration():
     print(f"Cj-Zj da iteração {getCurrIteration()}: {cjZj}")
     pivotColumnIndex = __evaluatePivotColumn(cjZj)
     print(f"> Coluna Pivô - índice [{pivotColumnIndex}] com valor [{cjZj[pivotColumnIndex]}]")
+    theta = []
+    pivotRowIndex = -1
     # Verifica se encontrou coluna pivô, indicando que existe valor positivo em Cj-Zj
     if pivotColumnIndex >= 0:
-        dividedBeta = __divide(beta, pivotColumnIndex)
-        print(f"Theta: {dividedBeta}")
-        pivotRowIndex = __evaluatePivotRow(dividedBeta)
-        print(f"> Linha Pivô - índice [{pivotRowIndex}] com valor [{dividedBeta[pivotRowIndex]}]")
+        theta = __divide(beta, pivotColumnIndex)
+        print(f"Theta: {theta}")
+        pivotRowIndex = __evaluatePivotRow(theta)
+        print(f"> Linha Pivô - índice [{pivotRowIndex}] com valor [{theta[pivotRowIndex]}]")
         pivotElement = restrictions[pivotRowIndex + 1][pivotColumnIndex]
         print(f"Elemento Pivô com valor {pivotElement}")
         print(f"Iteração atual: {getCurrIteration()}")
         # TODO: arrumar as equações para a próxima iteração
         __incrementIteration()
-
-##################################### Teste
-initial([60,40], {1:[2,3], 2:[4,2]}, [100,120])
+    else:
+        # TODO: Calcula zj para coluna beta
+        pass
+    return zj, cjZj, pivotColumnIndex, theta, pivotRowIndex
