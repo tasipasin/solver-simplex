@@ -92,13 +92,6 @@ def initial(funcObjR, restList, inequalities):
     cj = funcObj
     # Atribui as desigualdades na lista de beta
     beta = inequalities
-    print(f"\nVariaveis do problema e com preenchimento do excesso: {variables}")
-    print(f"Função objetivo: {funcObj}")
-    print(f"Variáveis base: {baseVariables}")
-    print(f"Beta: {beta}")
-    print(f"Restrições com preenchimento da identidade: {restrictions}\n")
-    # TODO: Remover
-    # nextIteration()
 
 # Verifica se as variáveis base tem valor de Cj-Zj igual a zero
 def verifyZeroInBaseVariables(cjZj):
@@ -124,9 +117,10 @@ def __evaluatePivotColumn(cjZj):
 def __evaluatePivotRow(theta):
     minorValueIndex = -1
     for i in range(len(theta)):
+        thetaValue = theta[i]
         # Verifica se o valor do índice ainda não foi atribuido
         # ou se o valor presente na coluna Theta é menor que o anterior
-        if minorValueIndex < 0 or theta[i] < theta[minorValueIndex]:
+        if thetaValue > 0 and (minorValueIndex < 0 or thetaValue < theta[minorValueIndex]):
             minorValueIndex = i
     return minorValueIndex
 
@@ -165,7 +159,6 @@ def executeIteration():
         for index in baseVariables:
             sumZj += funcObj[index] * restrictions[functionNmbr][value]
             functionNmbr += 1
-        print()
         zj.append(sumZj)
     # Calcula Cj-Zj
     cjZj = __subtract(cj, zj)
@@ -179,9 +172,6 @@ def executeIteration():
         theta = __divide(beta, pivotColumnIndex)
         # Valida linha pivô
         pivotRowIndex = __evaluatePivotRow(theta)
-    else:
-        # TODO: Calcula zj para coluna beta
-        pass
     return zj, cjZj, pivotColumnIndex, theta, pivotRowIndex
 
 # Função para realizar o pivoteamento
@@ -207,7 +197,7 @@ def performPivoting(pivotRowIndex, pivotColumnIndex):
             # Recupera o valor de multiplicação
             multiplicationFactor = manipRow[pivotColumnIndex]
             # Multiplica cada elemento da linha pelo valor de multiplicação
-            pivotRowMultiplied = [item * multiplicationFactor for item in pivotRow]
+            pivotRowMultiplied = [round(item * multiplicationFactor, 2) for item in pivotRow]
             # Subtrai a linha "antiga" pelo valor da linha do pivo multiplicada
             manipRow = __subtract(manipRow, pivotRowMultiplied)
             restTemp[key] = manipRow
@@ -217,6 +207,11 @@ def performPivoting(pivotRowIndex, pivotColumnIndex):
 
     # Atualiza a variável base para refletir o pivoteamento
     baseVariables[pivotRowIndex] = pivotColumnIndex
-    print(f"restTemp Variables: {restTemp}")
     restrictions = restTemp
 
+
+def calculateZFinal():
+    z = 0
+    for index in range(len(baseVariables)):
+        z += funcObj[baseVariables[index]] * beta[index]
+    return z

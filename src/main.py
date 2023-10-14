@@ -1,6 +1,6 @@
 # Requisitos do programa:
 # 1. Implementar a maximização.
-# 2. *Possuir uma interface com o usuário.
+# 2. Possuir uma interface com o usuário.
 # 3. Informar o número de iterações.
 # 4. Identificar o "Z" ou "C" ótimo e valores das variáveis básicas.
 # 5. Apontar problemas de degeneração.
@@ -21,9 +21,14 @@ variablesQtdField = simplexScreen.createTextVar()
 # Número de restrições para o problema
 restrictionQtdField = simplexScreen.createTextVar()
 
-# Verifica se o problema é de maximização
-def checkIfIsMaximization():
-    pass
+# Verifica condições de parada normal
+def checkStopCondition(cjZj, baseVariables):
+    stop = True
+    index = 0
+    while index < len(cjZj) and stop:
+        stop = (index in baseVariables and cjZj[index] == 0) or (index not in baseVariables and cjZj[index] < 0)
+        index += 1
+    return stop
 
 # Verifica se o problema é degenerado
 def checkIfIsDegenerate():
@@ -41,7 +46,6 @@ def checkIfIsUnbounded():
 def getRestrictionVariables():
     global restrictionsVariables
     return restrictionsVariables
-
 
 # Botão para confirmar os valores de variáveis e restrições
 def confirmProblemValues():
@@ -142,16 +146,16 @@ def initResolution():
             toGet = restrictionsVariables[key]
             asNumber = []
             for item in toGet[:-1]:
-                asNumber.append(int(item.get()))
+                asNumber.append(float(item.get()))
             # Adiciona o valor da variável na lista
             restrictionsVariables[key] = asNumber
             # Adiciona o valor da desigualdade na lista
-            inequalities.append(int(toGet[-1].get()))
+            inequalities.append(float(toGet[-1].get()))
         
         # Recupera os valores dos campos como inteiro
         asNumber = []
         for value in objectiveVariablesValue:
-            asNumber.append(int(value.get()))
+            asNumber.append(float(value.get()))
         # Adiciona o valor da variável na lista
         objectiveVariablesValue = asNumber
         simplex.initial(objectiveVariablesValue, restrictionsVariables, inequalities)
@@ -225,7 +229,7 @@ def createSimplexTable():
         simplexScreen.createLabel("|", linhaInsert, coluna)
         linhaInsert += 1
 
-    simplexScreen.createButton("Calcular elemento Pivô", lambda: evaluatePivotElement(linha), linha + 1, 0)
+    simplexScreen.createButton("Calcular Pivô", lambda: evaluatePivotElement(linha), linha + 1, 0)
 
 # Função para realizar o cálculo do elemento pivô
 def evaluatePivotElement(linha):
@@ -253,14 +257,21 @@ def evaluatePivotElement(linha):
     for i in range(len(theta)):
         simplexScreen.createLabel(str(theta[i]), linha, coluna)
         linha += 1
-    # Altera as cores da coluna, linha e elementos pivô da iteração
-    simplexScreen.changeTextColor(5 + len(simplex.getBaseVariables()), 3 + pivotColumnIndex, "red")
-    simplexScreen.changeTextColor(3 + pivotRowIndex, 3 + len(simplex.getVariables()) + 3, "red")
-    simplexScreen.changeTextColor(pivotRowIndex + 3, pivotColumnIndex + 3, "red")
+    if not checkStopCondition(cjZj, simplex.getBaseVariables()):
+        # Altera as cores da coluna, linha e elementos pivô da iteração
+        simplexScreen.changeTextColor(5 + len(simplex.getBaseVariables()), 3 + pivotColumnIndex, "red")
+        simplexScreen.changeTextColor(3 + pivotRowIndex, 3 + len(simplex.getVariables()) + 3, "red")
+        simplexScreen.changeTextColor(pivotRowIndex + 3, pivotColumnIndex + 3, "red")
 
-    simplex.performPivoting(pivotRowIndex, pivotColumnIndex)
-    # Insere botão para realizar pivoteamento e iniciar a próxima iteração
-    simplexScreen.createButton("Próxima Iteração", nextIteration, linha + 4, 0)
+        simplex.performPivoting(pivotRowIndex, pivotColumnIndex)
+        # Insere botão para realizar pivoteamento e iniciar a próxima iteração
+        simplexScreen.createButton("Próxima Iteração", nextIteration, linha + 4, 0)
+    else:
+        # Encerra processo
+        zFinal = simplex.calculateZFinal()
+        simplexScreen.createLabel(zFinal, 3 + len(simplex.getBeta()) + 1, 3 + len(simplex.getVariables()) + 1)
+        simplexScreen.createLabel("", linha + len(simplex.getBaseVariables()) + 4, 0)
+        simplexScreen.createLabelWithColor(f"Z final: {zFinal}", linha + len(simplex.getBaseVariables()) + 5, 1, "green")
 
 def nextIteration():
     # Monta a tabela do simplex
