@@ -47,6 +47,17 @@ def getRestrictionVariables():
     global restrictionsVariables
     return restrictionsVariables
 
+def getFractionAsFloat(value):
+    result = 0
+    if "/" in value:
+        splitted = value.split("/")
+        firstValue = float(splitted[0])
+        secondValue = float(splitted[1]) if splitted[1].strip() else 1
+        result = firstValue / secondValue
+    else:
+        result = float(value)
+    return result
+
 # Botão para confirmar os valores de variáveis e restrições
 def confirmProblemValues():
     # Obtém os valores da quantidade de "variáveis" e "restrições" como um inteiro
@@ -64,7 +75,6 @@ def confirmProblemValues():
 
 # Cria os textos e as entradas para a função objetivo
 def createObjectiveFunctionLabels(numVariables):
-    # TODO - Tem que aceitar valores com vírgula
     global objectiveVariablesValue
     objectiveVariablesValue = []
     simplexScreen.createLabel("Função Objetivo:", 0, 0)
@@ -141,21 +151,21 @@ def initResolution():
         # Lista para armazenar os valores das desigualdades
         inequalities = []
 
-        # Recupera os valores dos campos como inteiro
+        # Recupera os valores dos campos
         for key in restrictionsVariables:
             toGet = restrictionsVariables[key]
             asNumber = []
             for item in toGet[:-1]:
-                asNumber.append(float(item.get()))
+                asNumber.append(getFractionAsFloat(item.get()))
             # Adiciona o valor da variável na lista
             restrictionsVariables[key] = asNumber
             # Adiciona o valor da desigualdade na lista
-            inequalities.append(float(toGet[-1].get()))
+            inequalities.append(getFractionAsFloat(toGet[-1].get()))
         
-        # Recupera os valores dos campos como inteiro
+        # Recupera os valores dos campos
         asNumber = []
         for value in objectiveVariablesValue:
-            asNumber.append(float(value.get()))
+            asNumber.append(getFractionAsFloat(value.get()))
         # Adiciona o valor da variável na lista
         objectiveVariablesValue = asNumber
         simplex.initial(objectiveVariablesValue, restrictionsVariables, inequalities)
@@ -218,13 +228,13 @@ def createSimplexTable():
         coluna = 3
         listOfValues = restrictionsVariables[key]
         for item in listOfValues:
-            simplexScreen.createLabel(str(item), linhaInsert, coluna)
+            simplexScreen.createLabel(str(round(item, 2)), linhaInsert, coluna)
             coluna += 1
         # Coluna da barrinha
         simplexScreen.createLabel("|", linhaInsert, coluna)
         # Insere o valor de Beta da equação
         coluna += 1
-        simplexScreen.createLabel(simplex.getBeta()[key - 1], linhaInsert, coluna)
+        simplexScreen.createLabel(round(simplex.getBeta()[key - 1], 2), linhaInsert, coluna)
         coluna += 1
         simplexScreen.createLabel("|", linhaInsert, coluna)
         linhaInsert += 1
@@ -241,21 +251,21 @@ def evaluatePivotElement(linha):
     linha = linha - 2
     coluna = 3
     for i in range(len(zj)):
-        simplexScreen.createLabel(str(zj[i]), linha, coluna)
+        simplexScreen.createLabel(str(round(zj[i], 2)), linha, coluna)
         coluna += 1
     simplexScreen.createLabel("|", linha, coluna)
     # Indica onde inicia o espaço do Cj-Zj
     linha += 1
     coluna = 3
     for i in range(len(cjZj)):
-        simplexScreen.createLabel(str(cjZj[i]), linha, coluna)
+        simplexScreen.createLabel(str(round(cjZj[i], 2)), linha, coluna)
         coluna += 1
     simplexScreen.createLabel("|", linha, coluna)
     # Insere os valores da coluna de Theta
     linha = 3
     coluna = 3 + len(simplex.getVariables()) + 3
     for i in range(len(theta)):
-        simplexScreen.createLabel(str(theta[i]), linha, coluna)
+        simplexScreen.createLabel(str(round(theta[i], 2)), linha, coluna)
         linha += 1
     if not checkStopCondition(cjZj, simplex.getBaseVariables()):
         # Altera as cores da coluna, linha e elementos pivô da iteração
@@ -268,10 +278,16 @@ def evaluatePivotElement(linha):
         simplexScreen.createButton("Próxima Iteração", nextIteration, linha + 4, 0)
     else:
         # Encerra processo
-        zFinal = simplex.calculateZFinal()
+        zFinal = round(simplex.calculateZFinal(), 2)
         simplexScreen.createLabel(zFinal, 3 + len(simplex.getBeta()) + 1, 3 + len(simplex.getVariables()) + 1)
         simplexScreen.createLabel("", linha + len(simplex.getBaseVariables()) + 4, 0)
-        simplexScreen.createLabelWithColor(f"Z final: {zFinal}", linha + len(simplex.getBaseVariables()) + 5, 1, "green")
+        column = 1
+        simplexScreen.createLabelWithColor(f"Z final: {zFinal}", linha + len(simplex.getBaseVariables()) + 5, column, "green")
+        column += 1
+        # TODO - Colocar os Beta em verde também
+        # for index in range(len(simplex.getBeta())):
+            # if simplex.getBaseVariables()[index] is not simplex.getExcessVariables():
+            # simplexScreen.createLabelWithColor(f"{simplex.getVariables()[index]}: {simplex.getBeta()[index]}", linha + len(simplex.getBaseVariables()) + 5, column, "green")
 
 def nextIteration():
     # Monta a tabela do simplex

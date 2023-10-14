@@ -43,6 +43,10 @@ def getRestrictions():
 def getBeta():
     return beta
 
+# Retorna a lista de valores do beta 
+def getExcessVariables():
+    return excessVariables
+
 # Incrementa a iteração atual
 def __incrementIteration():
     global currIteration
@@ -142,7 +146,7 @@ def __divide(beta, position):
             # Quando é a coluna Pivo, e vai dividir Theta por 0, o valor é infinito
             result.append(math.inf)
         else:
-            result.append(round(value / restrictions[functionNmbr][position], 2))
+            result.append(value / restrictions[functionNmbr][position])
         # Incrementa a variável para ir para o valor da próxima restrição
         functionNmbr += 1
     return result
@@ -184,11 +188,11 @@ def performPivoting(pivotRowIndex, pivotColumnIndex):
     # Recupera o elemento pivô
     pivotElement = restTemp[pivotRowIndex + 1][pivotColumnIndex]
     # Recupera a linha pivô
-    pivotRow = [round(element / pivotElement, 2) for element in restTemp[pivotRowIndex + 1]]
+    pivotRow = [element / pivotElement for element in restTemp[pivotRowIndex + 1]]
     # Atualiza a linha pivô para ter "1" no elemento pivô
     restTemp[pivotRowIndex + 1] = pivotRow
     multiplicationFactor = 1
-    beta[pivotRowIndex] = round(beta[pivotRowIndex] / pivotElement, 2)
+    beta[pivotRowIndex] = beta[pivotRowIndex] / pivotElement
 
     for key in restTemp:
         if key != pivotRowIndex + 1:
@@ -197,13 +201,13 @@ def performPivoting(pivotRowIndex, pivotColumnIndex):
             # Recupera o valor de multiplicação
             multiplicationFactor = manipRow[pivotColumnIndex]
             # Multiplica cada elemento da linha pelo valor de multiplicação
-            pivotRowMultiplied = [round(item * multiplicationFactor, 2) for item in pivotRow]
+            pivotRowMultiplied = [item * multiplicationFactor for item in pivotRow]
             # Subtrai a linha "antiga" pelo valor da linha do pivo multiplicada
             manipRow = __subtract(manipRow, pivotRowMultiplied)
             restTemp[key] = manipRow
             
             # Atualiza os valores de Beta
-            beta[key - 1] = round(beta[key - 1] - multiplicationFactor * beta[pivotRowIndex], 2)
+            beta[key - 1] = beta[key - 1] - multiplicationFactor * beta[pivotRowIndex]
 
     # Atualiza a variável base para refletir o pivoteamento
     baseVariables[pivotRowIndex] = pivotColumnIndex
