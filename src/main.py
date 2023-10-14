@@ -257,6 +257,7 @@ def evaluatePivotElement(linha):
     simplexScreen.changeTextColor(5 + len(simplex.getBaseVariables()), 3 + pivotColumnIndex, "red")
     simplexScreen.changeTextColor(3 + pivotRowIndex, 3 + len(simplex.getVariables()) + 3, "red")
     simplexScreen.changeTextColor(pivotRowIndex + 3, pivotColumnIndex + 3, "red")
+
     simplex.performPivoting(pivotRowIndex, pivotColumnIndex)
     # Insere botão para realizar pivoteamento e iniciar a próxima iteração
     simplexScreen.createButton("Próxima Iteração", nextIteration, linha + 4, 0)

@@ -184,25 +184,39 @@ def executeIteration():
         pass
     return zj, cjZj, pivotColumnIndex, theta, pivotRowIndex
 
-
 # Função para realizar o pivoteamento
 def performPivoting(pivotRowIndex, pivotColumnIndex):
+    global restrictions
+    restTemp = restrictions
     # Incrementa a iteração
     __incrementIteration()
     global beta
-
     # Recupera o elemento pivô
-    pivotElement = restrictions[pivotRowIndex + 1][pivotColumnIndex]
-    print(f"Pivot Element: {pivotElement}")
+    pivotElement = restTemp[pivotRowIndex + 1][pivotColumnIndex]
+    # Recupera a linha pivô
+    pivotRow = [round(element / pivotElement, 2) for element in restTemp[pivotRowIndex + 1]]
+    # Atualiza a linha pivô para ter "1" no elemento pivô
+    restTemp[pivotRowIndex + 1] = pivotRow
+    multiplicationFactor = 1
+    beta[pivotRowIndex] = round(beta[pivotRowIndex] / pivotElement, 2)
 
-    print(f"Base Variables: {baseVariables}")
+    for key in restTemp:
+        if key != pivotRowIndex + 1:
+            # Recupera a linha inteira
+            manipRow = restTemp[key]
+            # Recupera o valor de multiplicação
+            multiplicationFactor = manipRow[pivotColumnIndex]
+            # Multiplica cada elemento da linha pelo valor de multiplicação
+            pivotRowMultiplied = [item * multiplicationFactor for item in pivotRow]
+            # Subtrai a linha "antiga" pelo valor da linha do pivo multiplicada
+            manipRow = __subtract(manipRow, pivotRowMultiplied)
+            restTemp[key] = manipRow
+            
+            # Atualiza os valores de Beta
+            beta[key - 1] = round(beta[key - 1] - multiplicationFactor * beta[pivotRowIndex], 2)
+
     # Atualiza a variável base para refletir o pivoteamento
     baseVariables[pivotRowIndex] = pivotColumnIndex
-    print(f"Base Variables: {baseVariables}")
+    print(f"restTemp Variables: {restTemp}")
+    restrictions = restTemp
 
-    # Atualiza a linha pivô para ter "1" no elemento pivô
-    pivotRow = restrictions[pivotRowIndex + 1]
-    pivotRow = [round(element / pivotElement, 2) for element in pivotRow]
-    restrictions[pivotRowIndex + 1] = pivotRow
-    beta[pivotRowIndex]
-    print(f"Restrictions Variables: {restrictions}")
