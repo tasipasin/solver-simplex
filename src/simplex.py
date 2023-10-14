@@ -1,3 +1,6 @@
+import math
+
+
 # Inicializa a variável que contém a iteração atual
 currIteration = 0
 # Lista de identificação das variáveis pela posição na lista
@@ -135,7 +138,11 @@ def __divide(beta, position):
     # Laço de repetição para cada elemento em 'beta'
     for value in beta:
         # Adiciona o conteúdo da iteração divididos pelo valor da restrição na determinada posição
-        result.append(round(value / restrictions[functionNmbr][position], 2))
+        if restrictions[functionNmbr][position] == 0:
+            # Quando é a coluna Pivo, e vai dividir Theta por 0, o valor é infinito
+            result.append(math.inf)
+        else:
+            result.append(round(value / restrictions[functionNmbr][position], 2))
         # Incrementa a variável para ir para o valor da próxima restrição
         functionNmbr += 1
     return result
