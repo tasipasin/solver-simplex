@@ -19,20 +19,27 @@ cj = []
 # Contém os valores de beta para cada 'key' (índice) de restrictions
 beta = []
 
-
-def getVariables():
-    return variables
-
-def getBaseVariables():
-    return baseVariables
-
-def getRestrictions():
-    return restrictions
-
 # Retorna a iteração atual
 def getCurrIteration():
     return currIteration
 
+# Retorna a lista de variáveis
+def getVariables():
+    return variables
+
+# Retorna a lista de variáveis de excesso
+def getExcessVariables():
+    return excessVariables
+
+# Retorna a lista de variáveis base
+def getBaseVariables():
+    return baseVariables
+
+# Retorna o mapa de restrições
+def getRestrictions():
+    return restrictions
+
+# Retorna a lista de valores do beta 
 def getBeta():
     return beta
 
@@ -100,7 +107,6 @@ def verifyZeroInBaseVariables(cjZj):
         if i in baseVariables and cjZj[i] != 0 and not result:
             result = False
     return result
-            
 
 # Verifica coluna Pivô
 def __evaluatePivotColumn(cjZj):
@@ -147,39 +153,56 @@ def __divide(beta, position):
         functionNmbr += 1
     return result
 
-# Realiza a próxima iteração
-def nextIteration():
+# Realiza os cálculos da iteração e verifica se é necessário mais uma iteração
+def executeIteration():
     zj = []
     # Laço de repetição para todas as variáveis
     for value in range(len(variables)):
         sumZj = 0
         functionNmbr = 1
         # Laço para multiplicar o valor da variável base para cada respectivo elemento na coluna e somar o resultado
+        # Calculo do Zj
         for index in baseVariables:
-            print("Índice da Variável Base: {0}, RestVal: {1}, Variável: {2}".format(funcObj[index], restrictions[functionNmbr][value], variables[value]))
             sumZj += funcObj[index] * restrictions[functionNmbr][value]
             functionNmbr += 1
         print()
         zj.append(sumZj)
-    # print(f"Zj's da iteração {getCurrIteration()}: {zj}")
+    # Calcula Cj-Zj
     cjZj = __subtract(cj, zj)
-    # print(f"Cj-Zj da iteração {getCurrIteration()}: {cjZj}")
+    # Verifica a coluna pivô
     pivotColumnIndex = __evaluatePivotColumn(cjZj)
-    # print(f"> Coluna Pivô - índice [{pivotColumnIndex}] com valor [{cjZj[pivotColumnIndex]}]")
+    # Realiza cálculo da coluna theta
     theta = []
     pivotRowIndex = -1
     # Verifica se encontrou coluna pivô, indicando que existe valor positivo em Cj-Zj
     if pivotColumnIndex >= 0:
         theta = __divide(beta, pivotColumnIndex)
-        # print(f"Theta: {theta}")
+        # Valida linha pivô
         pivotRowIndex = __evaluatePivotRow(theta)
-        # print(f"> Linha Pivô - índice [{pivotRowIndex}] com valor [{theta[pivotRowIndex]}]")
-        pivotElement = restrictions[pivotRowIndex + 1][pivotColumnIndex]
-        # print(f"Elemento Pivô com valor {pivotElement}")
-        # print(f"Iteração atual: {getCurrIteration()}")
-        # TODO: arrumar as equações para a próxima iteração
-        __incrementIteration()
     else:
         # TODO: Calcula zj para coluna beta
         pass
     return zj, cjZj, pivotColumnIndex, theta, pivotRowIndex
+
+
+# Função para realizar o pivoteamento
+def performPivoting(pivotRowIndex, pivotColumnIndex):
+    # Incrementa a iteração
+    __incrementIteration()
+    global beta
+
+    # Recupera o elemento pivô
+    pivotElement = restrictions[pivotRowIndex + 1][pivotColumnIndex]
+    print(f"Pivot Element: {pivotElement}")
+
+    print(f"Base Variables: {baseVariables}")
+    # Atualiza a variável base para refletir o pivoteamento
+    baseVariables[pivotRowIndex] = pivotColumnIndex
+    print(f"Base Variables: {baseVariables}")
+
+    # Atualiza a linha pivô para ter "1" no elemento pivô
+    pivotRow = restrictions[pivotRowIndex + 1]
+    pivotRow = [round(element / pivotElement, 2) for element in pivotRow]
+    restrictions[pivotRowIndex + 1] = pivotRow
+    beta[pivotRowIndex]
+    print(f"Restrictions Variables: {restrictions}")
