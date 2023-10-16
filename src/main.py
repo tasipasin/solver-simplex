@@ -1,9 +1,9 @@
 # Requisitos do programa:
-# 1. Implementar a maximização.
-# 2. Possuir uma interface com o usuário.
-# 3. Informar o número de iterações.
-# 4. Identificar o "Z" ou "C" ótimo e valores das variáveis básicas.
-# 5. Apontar problemas de degeneração.
+# 1. Implementar a maximização. (Feito)
+# 2. Possuir uma interface com o usuário. (Feito)
+# 3. Informar o número de iterações. (Feito)
+# 4. Identificar o "Z" ou "C" ótimo e valores das variáveis básicas. (Feito)
+# 5. Apontar problemas de degeneração. (Feito)
 # 6. Indicar se o problema é inviável.
 # 7. Indicar se o problema é sem fronteira.
 
@@ -31,8 +31,8 @@ def checkStopCondition(cjZj, baseVariables):
     return stop
 
 # Verifica se o problema é degenerado
-def checkIfIsDegenerate():
-    pass
+def checkIfIsDegenerate(theta, pivotRowIndex):
+    return theta.count(theta[pivotRowIndex]) > 1
 
 # Verifica se o problema é impraticável (inviável)
 def checkIfIsImpracticable():
@@ -267,6 +267,11 @@ def evaluatePivotElement(linha):
     for i in range(len(theta)):
         simplexScreen.createLabel(str(round(theta[i], 2)), linha, coluna)
         linha += 1
+    
+    # Verifica sistema degenerado
+    if pivotRowIndex >= 0 and checkIfIsDegenerate(theta, pivotRowIndex):
+        simplexScreen.createLabelWithColor("Sistema Degenerado", linha + len(simplex.getBaseVariables()) + 4, 0, "goldenrod")
+        linha += 1
     if not checkStopCondition(cjZj, simplex.getBaseVariables()):
         # Altera as cores da coluna, linha e elementos pivô da iteração
         simplexScreen.changeTextColor(5 + len(simplex.getBaseVariables()), 3 + pivotColumnIndex, "red")
@@ -279,6 +284,7 @@ def evaluatePivotElement(linha):
     else:
         # Encerra processo
         zFinal = round(simplex.calculateZFinal(), 2)
+        # Insere o Z final na tabela simplex
         simplexScreen.createLabel(zFinal, 3 + len(simplex.getBeta()) + 1, 3 + len(simplex.getVariables()) + 1)
         simplexScreen.createLabel("", linha + len(simplex.getBaseVariables()) + 4, 0)
         column = 1
