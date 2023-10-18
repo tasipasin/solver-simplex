@@ -4,8 +4,8 @@
 # 3. Informar o número de iterações. (Feito)
 # 4. Identificar o "Z" ou "C" ótimo e valores das variáveis básicas. (Feito)
 # 5. Apontar problemas de degeneração. (Feito)
-# 6. Indicar se o problema é inviável.
-# 7. Indicar se o problema é sem fronteira.
+# 6. Indicar se o problema é inviável - Trocando inicialmente por Ótimos alternados.
+# 7. Indicar se o problema é sem fronteira. (Feito)
 
 import math
 import simplex
@@ -32,6 +32,7 @@ def checkStopCondition(cjZj, baseVariables):
 
 # Verifica se o problema é degenerado
 def checkIfIsDegenerate(theta, pivotRowIndex):
+    # Quando os valores de theta são iguais, o problema é degenerado
     return theta.count(theta[pivotRowIndex]) > 1
 
 # Verifica se o problema é impraticável (inviável)
@@ -39,7 +40,20 @@ def checkIfIsImpracticable():
     pass
 
 # Verifica se o problema é sem fronteira
-def checkIfIsUnbounded():
+def checkIfIsUnbounded(theta):
+    # Quando não é identificado qual variável que entra, mas não sabe qual sai, o problema é sem fronteira
+    # Isso significa que theta apresenta valores negativos E infinitos, e não há outra possibilidade de escolha
+    unbounded = True
+    for i in range(len(theta)):
+        if theta[i] == math.inf:
+            theta[i] = -math.inf
+        if theta[i] > 0:
+            unbounded = False
+    return unbounded
+
+# Verifica se o problema é ótimos alternados
+def checkIfIsAlternatedOptimum():
+    # Quando em Cj-Zj há algum valor "0" sendo que essa respectiva variável não é base, o problema é ótimos alternados
     pass
 
 # Retorna a lista de variáveis do mapa de restrições
@@ -47,6 +61,7 @@ def getRestrictionVariables():
     global restrictionsVariables
     return restrictionsVariables
 
+# Retorna o resultado de uma fração como float, permitindo entrada de frações na interface
 def getFractionAsFloat(value):
     result = 0
     if "/" in value:
@@ -272,7 +287,12 @@ def evaluatePivotElement(linha):
     if pivotRowIndex >= 0 and checkIfIsDegenerate(theta, pivotRowIndex):
         simplexScreen.createLabelWithColor("Sistema Degenerado", linha + len(simplex.getBaseVariables()) + 4, 0, "goldenrod")
         linha += 1
-    if not checkStopCondition(cjZj, simplex.getBaseVariables()):
+    # Verifica sistema sem fronteira
+    if pivotRowIndex >= 0 and checkIfIsUnbounded(theta):
+        simplexScreen.createLabelWithColor("Sistema Sem Fronteira", linha + len(simplex.getBaseVariables()) + 4, 0, "goldenrod")
+        linha += 1
+    # Só consegue continuar a execução (próxima iteração) se não for um problema sem fronteira
+    if not checkStopCondition(cjZj, simplex.getBaseVariables()) and not checkIfIsUnbounded(theta):
         # Altera as cores da coluna, linha e elementos pivô da iteração
         simplexScreen.changeTextColor(5 + len(simplex.getBaseVariables()), 3 + pivotColumnIndex, "red")
         simplexScreen.changeTextColor(3 + pivotRowIndex, 3 + len(simplex.getVariables()) + 3, "red")
@@ -295,6 +315,7 @@ def evaluatePivotElement(linha):
             # if simplex.getBaseVariables()[index] is not simplex.getExcessVariables():
             # simplexScreen.createLabelWithColor(f"{simplex.getVariables()[index]}: {simplex.getBeta()[index]}", linha + len(simplex.getBaseVariables()) + 5, column, "green")
 
+# Função para realizar a próxima iteração
 def nextIteration():
     # Monta a tabela do simplex
     createSimplexTable()
