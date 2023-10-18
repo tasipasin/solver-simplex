@@ -52,9 +52,13 @@ def checkIfIsUnbounded(theta):
     return unbounded
 
 # Verifica se o problema é ótimos alternados
-def checkIfIsAlternatedOptimum():
+def checkIfIsAlternatedOptimum(cjZj, baseVariables):
     # Quando em Cj-Zj há algum valor "0" sendo que essa respectiva variável não é base, o problema é ótimos alternados
-    pass
+    alternated = False
+    for i in range(len(cjZj)):
+        if i not in baseVariables and cjZj[i] == 0:
+            alternated = True
+    return alternated
 
 # Retorna a lista de variáveis do mapa de restrições
 def getRestrictionVariables():
@@ -289,7 +293,11 @@ def evaluatePivotElement(linha):
         linha += 1
     # Verifica sistema sem fronteira
     if pivotRowIndex >= 0 and checkIfIsUnbounded(theta):
-        simplexScreen.createLabelWithColor("Sistema Sem Fronteira", linha + len(simplex.getBaseVariables()) + 4, 0, "goldenrod")
+        simplexScreen.createLabelWithColor("Problema Sem Fronteira", linha + len(simplex.getBaseVariables()) + 4, 0, "goldenrod")
+        linha += 1
+    # Verifica sistema ótimos alternados
+    if checkIfIsAlternatedOptimum(cjZj, simplex.getBaseVariables()):
+        simplexScreen.createLabelWithColor("Solução Ótimos Alternados", linha + len(simplex.getBaseVariables()) + 4, 0, "goldenrod")
         linha += 1
     # Só consegue continuar a execução (próxima iteração) se não for um problema sem fronteira
     if not checkStopCondition(cjZj, simplex.getBaseVariables()) and not checkIfIsUnbounded(theta):

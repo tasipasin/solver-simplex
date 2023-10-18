@@ -113,7 +113,7 @@ def __evaluatePivotColumn(cjZj):
         for i in range(len(cjZj)):
             # Verifica se o valor do índice ainda não foi atribuido
             # ou se o valor presente em Cj-Zj é maior que o valor de retorno
-            if cjZj[i] > 0 and (higherValueIndex < 0 or cjZj[i] > cjZj[higherValueIndex]):
+            if cjZj[i] >= 0 and (higherValueIndex < 0 or cjZj[i] > cjZj[higherValueIndex]) and i not in baseVariables:
                 higherValueIndex = i
     return higherValueIndex
 
