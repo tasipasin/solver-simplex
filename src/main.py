@@ -4,7 +4,7 @@
 # 3. Informar o número de iterações. (Feito)
 # 4. Identificar o "Z" ou "C" ótimo e valores das variáveis básicas. (Feito)
 # 5. Apontar problemas de degeneração. (Feito)
-# 6. Indicar se o problema é inviável - Trocando inicialmente por Ótimos alternados.
+# 6. Indicar se o problema é inviável - Trocando inicialmente por Ótimos alternados. (Feito)
 # 7. Indicar se o problema é sem fronteira. (Feito)
 
 import math
@@ -21,6 +21,9 @@ variablesQtdField = simplexScreen.createTextVar()
 # Número de restrições para o problema
 restrictionQtdField = simplexScreen.createTextVar()
 
+# Contador global para Solução de Ótimos alternados
+alternatedCounter = 0
+
 # Verifica condições de parada normal
 def checkStopCondition(cjZj, baseVariables):
     stop = True
@@ -34,10 +37,6 @@ def checkStopCondition(cjZj, baseVariables):
 def checkIfIsDegenerate(theta, pivotRowIndex):
     # Quando os valores de theta são iguais, o problema é degenerado
     return theta.count(theta[pivotRowIndex]) > 1
-
-# Verifica se o problema é impraticável (inviável)
-def checkIfIsImpracticable():
-    pass
 
 # Verifica se o problema é sem fronteira
 def checkIfIsUnbounded(theta):
@@ -262,6 +261,8 @@ def createSimplexTable():
 
 # Função para realizar o cálculo do elemento pivô
 def evaluatePivotElement(linha):
+    global alternatedCounter
+
     # Remove o botão de calcular elemento pivô
     simplexScreen.destroyElement(linha + 1, 0)
     # Realiza cálculos da iteração
@@ -293,18 +294,20 @@ def evaluatePivotElement(linha):
         linha += 1
     # Verifica sistema sem fronteira
     if pivotRowIndex >= 0 and checkIfIsUnbounded(theta):
-        simplexScreen.createLabelWithColor("Problema Sem Fronteira", linha + len(simplex.getBaseVariables()) + 4, 0, "goldenrod")
+        simplexScreen.createLabelWithColor("Problema\nSem Fronteira", linha + len(simplex.getBaseVariables()) + 4, 0, "red")
         linha += 1
     # Verifica sistema ótimos alternados
     if checkIfIsAlternatedOptimum(cjZj, simplex.getBaseVariables()):
-        simplexScreen.createLabelWithColor("Solução Ótimos Alternados", linha + len(simplex.getBaseVariables()) + 4, 0, "goldenrod")
+        simplexScreen.createLabelWithColor("Solução\nÓtimos Alternados", linha + len(simplex.getBaseVariables()) + 4, 0, "goldenrod")
         linha += 1
-    # Só consegue continuar a execução (próxima iteração) se não for um problema sem fronteira
-    if not checkStopCondition(cjZj, simplex.getBaseVariables()) and not checkIfIsUnbounded(theta):
+        # TODO - Remover comentário abaixo
+        # alternatedCounter += 1
+    # Só consegue continuar a execução (próximas iterações) se não for um problema sem fronteira
+    if not checkStopCondition(cjZj, simplex.getBaseVariables()) and not checkIfIsUnbounded(theta) and alternatedCounter <= 2:
         # Altera as cores da coluna, linha e elementos pivô da iteração
-        simplexScreen.changeTextColor(5 + len(simplex.getBaseVariables()), 3 + pivotColumnIndex, "red")
-        simplexScreen.changeTextColor(3 + pivotRowIndex, 3 + len(simplex.getVariables()) + 3, "red")
-        simplexScreen.changeTextColor(pivotRowIndex + 3, pivotColumnIndex + 3, "red")
+        simplexScreen.changeTextColor(5 + len(simplex.getBaseVariables()), 3 + pivotColumnIndex, "dodgerblue3")
+        simplexScreen.changeTextColor(3 + pivotRowIndex, 3 + len(simplex.getVariables()) + 3, "dodgerblue3")
+        simplexScreen.changeTextColor(pivotRowIndex + 3, pivotColumnIndex + 3, "dodgerblue3")
 
         simplex.performPivoting(pivotRowIndex, pivotColumnIndex)
         # Insere botão para realizar pivoteamento e iniciar a próxima iteração
@@ -316,12 +319,15 @@ def evaluatePivotElement(linha):
         simplexScreen.createLabel(zFinal, 3 + len(simplex.getBeta()) + 1, 3 + len(simplex.getVariables()) + 1)
         simplexScreen.createLabel("", linha + len(simplex.getBaseVariables()) + 4, 0)
         column = 1
-        simplexScreen.createLabelWithColor(f"Z final: {zFinal}", linha + len(simplex.getBaseVariables()) + 5, column, "green")
-        column += 1
-        # TODO - Colocar os Beta em verde também
-        # for index in range(len(simplex.getBeta())):
-            # if simplex.getBaseVariables()[index] is not simplex.getExcessVariables():
-            # simplexScreen.createLabelWithColor(f"{simplex.getVariables()[index]}: {simplex.getBeta()[index]}", linha + len(simplex.getBaseVariables()) + 5, column, "green")
+        simplexScreen.createLabelWithColor(f"Z final: {zFinal}", linha + len(simplex.getBaseVariables()) + 5, column, "forestgreen")
+
+        # Marca de verde os valores de Beta e as respectivas variáveis base
+        for index in range(len(simplex.getBaseVariables())):
+            if simplex.getBaseVariables()[index] not in simplex.getExcessVariables():
+                simplexScreen.changeTextColor(3 + index, 1, "forestgreen")
+                simplexScreen.changeTextColor(3 + index, 3 + len(simplex.getVariables()) + 1, "forestgreen")
+                simplexScreen.createLabelWithColor(f"{simplex.getVariables()[simplex.getBaseVariables()[index]]} = {round(simplex.getBeta()[index], 2)}", linha + len(simplex.getBaseVariables()) + 6 + index, column, "forestgreen")
+                linha += 1
 
 # Função para realizar a próxima iteração
 def nextIteration():
