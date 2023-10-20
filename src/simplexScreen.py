@@ -4,7 +4,7 @@ from tkinter import messagebox
 # Função para criar a janela principal do tkinter
 def createMainWindow():
     window = tk.Tk()
-    window.title("Linear Programming Problem Resolution")
+    window.title("Solver Simplex - Mateus Ferro, Tasi Pasin")
     window.geometry("600x400")
     return window
 
